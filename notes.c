@@ -10,9 +10,9 @@
 | Good for    | Debug, simple comms | Sensors | High-speed data           |
 
 
-I2C
+I2C (Inter-Intergrated Circuit)
     summary:
-        - 2 wires to share a bus with many devices, each with an address
+        - 2 wires to share one bus with many devices, each with an address
 
     wires:
         - SDA (data)
@@ -41,9 +41,10 @@ I2C
         - small peripherals
 
 
-SPI
+SPI (Serial Peripheral Interface)
     summary:
         - fast protocol with separate data lines and a chip select for each device
+        - very fast information with dedicated wires
 
     wires:
         - MOSI (master out, slave in)
@@ -73,7 +74,7 @@ SPI
         - ADCs/ DACs
 
 
-UART
+UART (Universal Asynchronous Receiver/ Transmitter)
     summary:
         - 2 wires sending bytes back and forth at an agreed upon speed
 
@@ -101,17 +102,91 @@ UART
         - bluetooth modules
         - debug prints (printf over serial)
 
+*/
+
+/*
+
+| Feature               | CAN                               | Ethernet                           |
+| --------------------- | --------------------------------- | ---------------------------------- |
+| Bandwidth             | Low (~1-8 Mbps)                   | High (100 Mbps - 1 Gbps)           |
+| Use case              | Control messages, safety-critical | High-bandwidth data (video, radar) |
+| Reliability           | Very high                         | High but less deterministic        |
+| Message Size          | Small                             | Large                              |
+| Topology              | Single shared bus                 | Switched network                   |
+| Real-time suitability | Yes                               | Usually no                         |
 
 
+CAN (Controller Area Network)
+    summary:
+        - a robust communication bus designed for cars, where many ECUs share one bus and messages have priorities
+        - nervous system of a car: robust, small, critical messages
+
+    wires:
+        - CAN-H
+        - CAN-L
+
+    characteristics:
+        - multi master bus
+        - every node can talk
+        - arbitration system decides which message wins
+        - very reliable and fault tolerant
+        - used for real time control in vehicles
+
+    pros:
+        - extremely robust
+        - works in noisy environments
+        - determins priority automatically
+        - many devices can share 1 bus
+        - small fixed size messages (8 bytes) (predictable timing)
+
+    cons:
+        - lower bandwidth (1 Mbps) (classic CAN)
+        - messages are small
+        - requires tight timing rules
+
+    used for:
+        - powertrain ECUs
+        - braking systems
+        - steering
+        - battery management systems
+        - vehicle control networks
 
 
-CAN
+ETH (Automotive Ethernet)
+    summary:
+        - provides high speed communication for cameras, sensors, ADAS, infotainment, and high bandwidth modules
+        - internet inside tha car: huge amounts of data, fast
 
-ETH protocol/ busses
+    characteristics:
+        - much faster than CAN
+        - used for data-heavy systems
+        - supports structured networks (switches/ routing)
+        - standard speeds: 100 Mbps, 1 Gbps, and up
 
-RTOS
+    pros:
+        - extremely high bandwidth
+        - good for cameras and sensors
+        - supports complex topologies
+        - future proof
 
-Bit manipulation
+    cons:
+        - more power consumption
+        - more complex hardware/ software
+        - not ideal for real time control (higher latency than CAN)
+
+    used for:
+        - autonomous drving sensors
+        - cameras
+        - radar/ LiDAR
+        - infotainment
+        - OTA updates
+
+*/
+
+/*
+
+RTOS (Real Time Operating System)
+
 
 Communication protocol
 
@@ -119,5 +194,8 @@ Communication protocol
 */
 
 
+// Bit manipulation
 
-//Leetcode practice:
+
+
+// Leetcode practice:
