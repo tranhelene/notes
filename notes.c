@@ -1,5 +1,65 @@
 /*
 
+RTOS (Real Time Operating System)
+    summary:
+        - a lightweight operating system designed for predictable timing
+        - runs small tasks with strict timing guarantees
+        - like a scheduler that decides which task runs when (always on time)
+        - small real time operating system that schedules tasks and ensures high priority tasks run on time
+        - provides tools like mutexes, semaphores, and message queues to coordinate tasks in embedded systems
+
+    characteristics:
+        - real time scheduling
+            - uses priority based scheduling so the most important task runs immediately
+        - deterministic timing
+            - know exactly how long scheduling and context switching take
+        - preemptive multitasking
+            - a high priority task can interrupt a low priority one at any time
+        - small footprint
+            - uses very little memory
+            - perfect for microcontrollers
+        - task based architecture
+            - software is divided into tasks (threads) like:
+                - sensor reading
+                - communicative handling
+                - motor control
+        - inter task communication
+            - uses objects like:
+                - mutexes (protect shared resources)
+                - semaphores (signal between tasks)
+                - queues (pass data safely)
+                - event flags (synchronization)
+        - interrupt support
+            - ISRs (interrupt service routines) must be short and fast
+
+    core concepts:
+        - tasks/ threads
+            - a small program running independently
+        - context switching
+            - switching from one task to another
+            - saves CPU state
+        - synchronization objects
+            - mutex
+                - only 1 task can own it
+                - prevents two tasks from using the same resource
+            - semaphore
+                - a signal between tasks
+                - when a task is done the next one can start
+            - queue/ message queue
+                - safe way to send data between tasks
+
+
+Communication protocol
+    - UART (simple/ 2 wires)
+    - I2C (2 wires. many devices)
+    - SPI (fast/ 4 wires/ high speed devices)
+    - CAN (automotive/ robust)
+    - ETH (ethernet/ high bandwidth sensors)
+
+*/
+
+/*
+
 | Feature     | UART                | I2C     | SPI                       |
 | ----------- | ------------------- | ------- | ------------------------- |
 | Wires       | 2                   | 2       | 4+                        |
@@ -10,7 +70,7 @@
 | Good for    | Debug, simple comms | Sensors | High-speed data           |
 
 
-I2C (Inter-Intergrated Circuit)
+I2C (Inter-Integrated Circuit)
     summary:
         - 2 wires to share one bus with many devices, each with an address
 
@@ -39,7 +99,6 @@ I2C (Inter-Intergrated Circuit)
         - accelerometers/ IMUs
         - EEPROM
         - small peripherals
-
 
 SPI (Serial Peripheral Interface)
     summary:
@@ -135,7 +194,7 @@ CAN (Controller Area Network)
     pros:
         - extremely robust
         - works in noisy environments
-        - determins priority automatically
+        - determines priority automatically
         - many devices can share 1 bus
         - small fixed size messages (8 bytes) (predictable timing)
 
@@ -155,7 +214,7 @@ CAN (Controller Area Network)
 ETH (Automotive Ethernet)
     summary:
         - provides high speed communication for cameras, sensors, ADAS, infotainment, and high bandwidth modules
-        - internet inside tha car: huge amounts of data, fast
+        - internet inside the car: huge amounts of data, fast
 
     characteristics:
         - much faster than CAN
@@ -175,7 +234,7 @@ ETH (Automotive Ethernet)
         - not ideal for real time control (higher latency than CAN)
 
     used for:
-        - autonomous drving sensors
+        - autonomous driving sensors
         - cameras
         - radar/ LiDAR
         - infotainment
@@ -183,19 +242,41 @@ ETH (Automotive Ethernet)
 
 */
 
+
 /*
 
-RTOS (Real Time Operating System)
-
-
-Communication protocol
-
+20 things/ RTOS practice questions/ communicative protocol questions
 
 */
 
 
-// Bit manipulation
+/* bit manipulation */
+
+// set a bit
+    num |= (1 << {bit});
+
+// clear a bit
+    num &= ~(1 << {bit});
+
+// toggle a bit
+    num ^= (1 << {bit});
+
+// check if a bit is set
+    if(num & (1 << {bit}))
+
+// masking
+    {value} & 0xF
+
+// examples:
+
+// check 3rd bit is set
+    return (num & (1 << 3)) != 0;
+
+// toggle bit 7
+    num ^= (1 << 7);
+
+// clear bit 2
+    reg &= ~0x04;
 
 
-
-// Leetcode practice:
+/* leetcode practice */
