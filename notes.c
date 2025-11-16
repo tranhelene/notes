@@ -60,14 +60,15 @@ Communication protocol
 
 /*
 
-| Feature     | UART                | I2C     | SPI                       |
-| ----------- | ------------------- | ------- | ------------------------- |
-| Wires       | 2                   | 2       | 4+                        |
-| Devices     | 2                   | Many    | Few (needs CS per device) |
-| Speed       | Slow                | Medium  | Fast                      |
-| Full duplex | Yes                 | No      | Yes                       |
-| Clock line  | No                  | Yes     | Yes                       |
-| Good for    | Debug, simple comms | Sensors | High-speed data           |
+| Feature     | UART                | I2C        | SPI                       |
+| ----------- | ------------------- | ---------- | ------------------------- |
+| Wires       | 2                   | 2          | 4+                        |
+| Devices     | 2                   | Many       | Few (needs CS per device) |
+| Speed       | Slow                | Medium     | Fast                      |
+| Full duplex | Yes                 | No         | Yes                       |
+| Clock line  | No                  | Yes        | Yes                       |
+| Good for    | Debug, simple comms | Sensors    | High-speed data           |
+| Other       | Simple serial       | shared bus | uses separate lines       |
 
 
 I2C (Inter-Integrated Circuit)
@@ -242,10 +243,137 @@ ETH (Automotive Ethernet)
 
 */
 
-
 /*
 
-20 things/ RTOS practice questions/ communicative protocol questions
+what is firmware?
+    - software that directly control hardware
+    - lives in flash memory and runs as soon as device powers on
+
+what is a microcontroller (MCU)?
+    - tiny computer on a chip
+    - includes: CPU, flash (program storage), RAM (variables), timers, GPIO pins, communication modules (UART, SPI, I2C, CAN)
+
+what is the difference between flash and RAM?
+    | Flash                                   | RAM                              |
+    | --------------------------------------- | -------------------------------- |
+    | Non-volatile (keeps data without power) | Volatile (erased when power off) |
+    | Stores firmware                         | Stores variables/stack           |
+    | Slow to write                           | Fast                             |
+
+what is volatile?
+    - a keyword telling the compiler that a value may change unexpectedly and to not optimize it
+    - used for hardware registers and variables changed by interrupts
+
+what is static?
+    - the variable keeps its value between function calls
+    - has file only visibility (not accessible from other files)
+
+how do pointers work?
+    - pointers store memory addresses
+    - used to access hardware registers, modify variables by reference, work with arrays efficiently
+
+what is an interrupt?
+    - hardware signal that stops the program to handle another event right away
+    - examples: button press, sensor reading, timer expiration
+
+what is a watchdog timer?
+    - a hardware timer that resets the system if firmware freezes
+
+what is UART
+    - Universal Asynchronous Receiver/ Transmitter
+    - simple, relatively slow, serial communication (TX/ RX pins)
+
+what is I2C?
+    - Inter Integrated Circuit
+    - two wire communication (SDA/ SCL)
+    - used for sensors
+
+what is SPI?
+    - Serial Peripheral Interface
+    - fast, full duplex communication with MOSI, MISO, SCK, CS
+    - used for displays, flash chips, higher speed devices
+
+what is CAN?
+    - Controller Area Network
+    - a robust communication bus used in cars
+    - allows many devices to communicate even in noisy environments
+
+what is an RTOS?
+    - Real Time Operating System
+    - provides tasks, priorities, scheduling, semaphores, mutexes, timers
+    - used when precise timing is required
+
+what is a mutex?
+    - a lock that ensures only one task uses a shared resource at a time
+
+what is a semaphore?
+    - a signal mechanism
+    - used for notifying a task that an event happened and task synchronisation
+
+what is a race condition?
+    - when two pieces of code access the same data at the same time and cause incorrect results
+
+what is memory mapped I/O?
+    - hardware registers are accessed like regular memory addresses
+
+why is C used for firmware?
+    - fast, predictable, close to hardware, small in memory use, widely supported for MCUs
+
+what is the difference between pass by value and pass by reference?
+    | Pass by Value                     | Pass by Reference (pointer)     |
+    | --------------------------------- | ------------------------------- |
+    | Copies the value                  | Passes the address (pointer)    |
+    | Does not affect original variable | Modifies original variable      |
+
+what is a segmentation fault?
+    - an invalid memory access, usually caused by bad pointers
+
+what is the difference between SRAM and flash?
+    | SRAM                          | Flash                          |
+    | ----------------------------- | ------------------------------ |
+    | Volatile (data lost on power) | Non-volatile (retains data)    |
+    | Used for variables/ stack     | Used for program storage       |
+    | Faster access                 | Slower to write/ erase         |
+
+what is a bootloader
+    - small code that runs before the main firmware to set up the system or perform updates
+
+what happens in an ISR (interrupt service routine)?
+    - handles quick logic, set flags, then exits
+    - avoids long code or blocking calls
+
+what is DMA (direct memory access)?
+    - hardware engine that moves data without using the CPU
+
+what is priority inversion?
+    - when a low priority task holds a lock needed by a high priority task, causing delays
+    - fix: priority inheritance
+
+when do you use a semphore vs mutex
+    - mutex: protect shared resources (only one task at a time)
+    - semaphore: signal between tasks (counting, multiple signals)
+
+why use an RTOS instead of bare metal superloop?
+    - precise timing
+    - multiple tasks
+    - easier code organization
+    - built in synchronization tools
+
+why can UART lose synchronization?
+    - no clock line
+    - if baud rates differ, bits get misaligned
+
+why does SPI need a CS (chip select) line?
+    - to select which slave device the master is talking to
+
+why does I2C use pull up resistors?
+    - open drain lines need pull ups to define high state
+
+why does CAN use arbitration?
+    - to determine which message has priority on a shared bus without collision
+
+why is ethernet used for autonomous systems?
+    - high speed data transfer needed for sensors
 
 */
 
@@ -263,6 +391,8 @@ ETH (Automotive Ethernet)
 
 // check if a bit is set
     if(num & (1 << {bit}))
+    // OR
+    return (num & (1 << {bit})) != 0;
 
 // masking
     {value} & 0xF
@@ -280,3 +410,4 @@ ETH (Automotive Ethernet)
 
 
 /* leetcode practice */
+
