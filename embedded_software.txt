@@ -1,0 +1,377 @@
+------------------------------------- RTOS and Communication Protocol -----------------------------------------
+
+RTOS (Real Time Operating System)
+    summary:
+        - a lightweight operating system designed for predictable timing
+        - runs small tasks with strict timing guarantees
+        - like a scheduler that decides which task runs when (always on time)
+        - small real time operating system that schedules tasks and ensures high priority tasks run on time
+        - provides tools like mutexes, semaphores, and message queues to coordinate tasks in embedded systems
+
+    characteristics:
+        - real time scheduling
+            - uses priority based scheduling so the most important task runs immediately
+        - deterministic timing
+            - know exactly how long scheduling and context switching take
+        - preemptive multitasking
+            - a high priority task can interrupt a low priority one at any time
+        - small footprint
+            - uses very little memory
+            - perfect for microcontrollers
+        - task based architecture
+            - software is divided into tasks (threads) like:
+                - sensor reading
+                - communicative handling
+                - motor control
+        - inter task communication
+            - uses objects like:
+                - mutexes (protect shared resources)
+                - semaphores (signal between tasks)
+                - queues (pass data safely)
+                - event flags (synchronization)
+        - interrupt support
+            - ISRs (interrupt service routines) must be short and fast
+
+    core concepts:
+        - tasks/ threads
+            - a small program running independently
+        - context switching
+            - switching from one task to another
+            - saves CPU state
+        - synchronization objects
+            - mutex
+                - only 1 task can own it
+                - prevents two tasks from using the same resource
+            - semaphore
+                - a signal between tasks
+                - when a task is done the next one can start
+            - queue/ message queue
+                - safe way to send data between tasks
+
+
+Communication protocol
+    - UART (simple/ 2 wires)
+    - I2C (2 wires. many devices)
+    - SPI (fast/ 4 wires/ high speed devices)
+    - CAN (automotive/ robust)
+    - ETH (ethernet/ high bandwidth sensors)
+
+
+
+-------------------------------------------- UART vs I2C vs SPI -----------------------------------------------
+
+| Feature     | UART                | I2C        | SPI                       |
+| ----------- | ------------------- | ---------- | ------------------------- |
+| Wires       | 2                   | 2          | 4+                        |
+| Devices     | 2                   | Many       | Few (needs CS per device) |
+| Speed       | Slow                | Medium     | Fast                      |
+| Full duplex | Yes                 | No         | Yes                       |
+| Clock line  | No                  | Yes        | Yes                       |
+| Good for    | Debug, simple comms | Sensors    | High-speed data           |
+| Other       | Simple serial       | shared bus | uses separate lines       |
+
+
+I2C (Inter-Integrated Circuit)
+    summary:
+        - 2 wires to share one bus with many devices, each with an address
+
+    wires:
+        - SDA (data)
+        - SCL (clock)
+
+    characteristics:
+        - synchronous (uses clock line)
+        - supports multiple devices
+        - each device has an address
+        - master-slave protocol
+
+    pros:
+        - only 2 wires
+        - can have many devices on same bus
+        - very common in sensors
+
+    cons:
+        - slower than SPI
+        - more complex (ACK, addressing)
+        - sensitive to noise (good for short PCB distances only)
+
+    used for:
+        - temperature sensors
+        - accelerometers/ IMUs
+        - EEPROM
+        - small peripherals
+
+
+SPI (Serial Peripheral Interface)
+    summary:
+        - fast protocol with separate data lines and a chip select for each device
+        - very fast information with dedicated wires
+
+    wires:
+        - MOSI (master out, slave in)
+        - MISO (master in, slave out)
+        - SCLK (clock)
+        - CS (chip select, one per device)
+
+    characteristics:
+        - very fast
+        - full duplex (send and receive simultaneously)
+        - master controls clock
+
+    pros:
+        - much faster than I2C/ UART
+        - very reliable
+        - good for streaming data
+
+    cons:
+        - requires more wires
+        - not ideal for many devices
+        - no built in addressing
+
+    used for:
+        - external flash memory
+        - displays
+        - high speed sensors
+        - ADCs/ DACs
+
+
+UART (Universal Asynchronous Receiver/ Transmitter)
+    summary:
+        - 2 wires sending bytes back and forth at an agreed upon speed
+
+    wires:
+        - TX (transmit)
+        - RX (receive)
+
+    characteristics:
+        - asynchronous (no clock wire)
+        - point to point (only 2 devices)
+        - simple but slow
+
+    pros:
+        - very easy to use
+        - good for debugging/ logging
+        - only 2 wires
+
+    cons:
+        - not good for many devices
+        - not very fast
+        - can lose sync if baud rates mismatch
+
+    used for:
+        - GPS modules
+        - bluetooth modules
+        - debug prints (printf over serial)
+
+
+
+----------------------------------------------- CAN vs ETH ----------------------------------------------------
+
+| Feature               | CAN                               | Ethernet                           |
+| --------------------- | --------------------------------- | ---------------------------------- |
+| Bandwidth             | Low (~1-8 Mbps)                   | High (100 Mbps - 1 Gbps)           |
+| Use case              | Control messages, safety-critical | High-bandwidth data (video, radar) |
+| Reliability           | Very high                         | High but less deterministic        |
+| Message Size          | Small                             | Large                              |
+| Topology              | Single shared bus                 | Switched network                   |
+| Real-time suitability | Yes                               | Usually no                         |
+
+
+CAN (Controller Area Network)
+    summary:
+        - a robust communication bus designed for cars, where many ECUs share one bus and messages have priorities
+        - nervous system of a car: robust, small, critical messages
+
+    wires:
+        - CAN-H
+        - CAN-L
+
+    characteristics:
+        - multi master bus
+        - every node can talk
+        - arbitration system decides which message wins
+        - very reliable and fault tolerant
+        - used for real time control in vehicles
+
+    pros:
+        - extremely robust
+        - works in noisy environments
+        - determines priority automatically
+        - many devices can share 1 bus
+        - small fixed size messages (8 bytes) (predictable timing)
+
+    cons:
+        - lower bandwidth (1 Mbps) (classic CAN)
+        - messages are small
+        - requires tight timing rules
+
+    used for:
+        - powertrain ECUs
+        - braking systems
+        - steering
+        - battery management systems
+        - vehicle control networks
+
+
+ETH (Automotive Ethernet)
+    summary:
+        - provides high speed communication for cameras, sensors, ADAS, infotainment, and high bandwidth modules
+        - internet inside the car: huge amounts of data, fast
+
+    characteristics:
+        - much faster than CAN
+        - used for data-heavy systems
+        - supports structured networks (switches/ routing)
+        - standard speeds: 100 Mbps, 1 Gbps, and up
+
+    pros:
+        - extremely high bandwidth
+        - good for cameras and sensors
+        - supports complex topologies
+        - future proof
+
+    cons:
+        - more power consumption
+        - more complex hardware/ software
+        - not ideal for real time control (higher latency than CAN)
+
+    used for:
+        - autonomous driving sensors
+        - cameras
+        - radar/ LiDAR
+        - infotainment
+        - OTA updates
+
+
+
+------------------------------------------ Technical Questions ------------------------------------------------
+
+what is firmware?
+    - software that directly control hardware
+    - lives in flash memory and runs as soon as device powers on
+
+what is a microcontroller (MCU)?
+    - tiny computer on a chip
+    - includes: CPU, flash (program storage), RAM (variables), timers, GPIO pins, communication modules (UART, SPI, I2C, CAN)
+
+what is the difference between flash and RAM?
+    | Flash                                   | RAM                              |
+    | --------------------------------------- | -------------------------------- |
+    | Non-volatile (keeps data without power) | Volatile (erased when power off) |
+    | Stores firmware                         | Stores variables/stack           |
+    | Slow to write                           | Fast                             |
+
+what is volatile?
+    - a keyword telling the compiler that a value may change unexpectedly and to not optimize it
+    - used for hardware registers and variables changed by interrupts
+
+what is static?
+    - the variable keeps its value between function calls
+    - has file only visibility (not accessible from other files)
+
+how do pointers work?
+    - pointers store memory addresses
+    - used to access hardware registers, modify variables by reference, work with arrays efficiently
+
+what is an interrupt?
+    - hardware signal that stops the program to handle another event right away
+    - examples: button press, sensor reading, timer expiration
+
+what is a watchdog timer?
+    - a hardware timer that resets the system if firmware freezes
+
+what is UART
+    - Universal Asynchronous Receiver/ Transmitter
+    - simple, relatively slow, serial communication (TX/ RX pins)
+
+what is I2C?
+    - Inter Integrated Circuit
+    - two wire communication (SDA/ SCL)
+    - used for sensors
+
+what is SPI?
+    - Serial Peripheral Interface
+    - fast, full duplex communication with MOSI, MISO, SCK, CS
+    - used for displays, flash chips, higher speed devices
+
+what is CAN?
+    - Controller Area Network
+    - a robust communication bus used in cars
+    - allows many devices to communicate even in noisy environments
+
+what is an RTOS?
+    - Real Time Operating System
+    - provides tasks, priorities, scheduling, semaphores, mutexes, timers
+    - used when precise timing is required
+
+what is a mutex?
+    - a lock that ensures only one task uses a shared resource at a time
+
+what is a semaphore?
+    - a signal mechanism
+    - used for notifying a task that an event happened and task synchronisation
+
+what is a race condition?
+    - when two pieces of code access the same data at the same time and cause incorrect results
+
+what is memory mapped I/O?
+    - hardware registers are accessed like regular memory addresses
+
+why is C used for firmware?
+    - fast, predictable, close to hardware, small in memory use, widely supported for MCUs
+
+what is the difference between pass by value and pass by reference?
+    | Pass by Value                     | Pass by Reference (pointer)     |
+    | --------------------------------- | ------------------------------- |
+    | Copies the value                  | Passes the address (pointer)    |
+    | Does not affect original variable | Modifies original variable      |
+
+what is a segmentation fault?
+    - an invalid memory access, usually caused by bad pointers
+
+what is the difference between SRAM and flash?
+    | SRAM                          | Flash                          |
+    | ----------------------------- | ------------------------------ |
+    | Volatile (data lost on power) | Non-volatile (retains data)    |
+    | Used for variables/ stack     | Used for program storage       |
+    | Faster access                 | Slower to write/ erase         |
+
+what is a bootloader
+    - small code that runs before the main firmware to set up the system or perform updates
+
+what happens in an ISR (interrupt service routine)?
+    - handles quick logic, set flags, then exits
+    - avoids long code or blocking calls
+
+what is DMA (direct memory access)?
+    - hardware engine that moves data without using the CPU
+
+what is priority inversion?
+    - when a low priority task holds a lock needed by a high priority task, causing delays
+    - fix: priority inheritance
+
+when do you use a semphore vs mutex
+    - mutex: protect shared resources (only one task at a time)
+    - semaphore: signal between tasks (counting, multiple signals)
+
+why use an RTOS instead of bare metal superloop?
+    - precise timing
+    - multiple tasks
+    - easier code organization
+    - built in synchronization tools
+
+why can UART lose synchronization?
+    - no clock line
+    - if baud rates differ, bits get misaligned
+
+why does SPI need a CS (chip select) line?
+    - to select which slave device the master is talking to
+
+why does I2C use pull up resistors?
+    - open drain lines need pull ups to define high state
+
+why does CAN use arbitration?
+    - to determine which message has priority on a shared bus without collision
+
+why is ethernet used for autonomous systems?
+    - high speed data transfer needed for sensors
