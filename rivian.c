@@ -1,384 +1,61 @@
-/*
-
-RTOS (Real Time Operating System)
-    summary:
-        - a lightweight operating system designed for predictable timing
-        - runs small tasks with strict timing guarantees
-        - like a scheduler that decides which task runs when (always on time)
-        - small real time operating system that schedules tasks and ensures high priority tasks run on time
-        - provides tools like mutexes, semaphores, and message queues to coordinate tasks in embedded systems
-
-    characteristics:
-        - real time scheduling
-            - uses priority based scheduling so the most important task runs immediately
-        - deterministic timing
-            - know exactly how long scheduling and context switching take
-        - preemptive multitasking
-            - a high priority task can interrupt a low priority one at any time
-        - small footprint
-            - uses very little memory
-            - perfect for microcontrollers
-        - task based architecture
-            - software is divided into tasks (threads) like:
-                - sensor reading
-                - communicative handling
-                - motor control
-        - inter task communication
-            - uses objects like:
-                - mutexes (protect shared resources)
-                - semaphores (signal between tasks)
-                - queues (pass data safely)
-                - event flags (synchronization)
-        - interrupt support
-            - ISRs (interrupt service routines) must be short and fast
-
-    core concepts:
-        - tasks/ threads
-            - a small program running independently
-        - context switching
-            - switching from one task to another
-            - saves CPU state
-        - synchronization objects
-            - mutex
-                - only 1 task can own it
-                - prevents two tasks from using the same resource
-            - semaphore
-                - a signal between tasks
-                - when a task is done the next one can start
-            - queue/ message queue
-                - safe way to send data between tasks
-
-
-Communication protocol
-    - UART (simple/ 2 wires)
-    - I2C (2 wires. many devices)
-    - SPI (fast/ 4 wires/ high speed devices)
-    - CAN (automotive/ robust)
-    - ETH (ethernet/ high bandwidth sensors)
-
-*/
-
-/*
-
-| Feature     | UART                | I2C        | SPI                       |
-| ----------- | ------------------- | ---------- | ------------------------- |
-| Wires       | 2                   | 2          | 4+                        |
-| Devices     | 2                   | Many       | Few (needs CS per device) |
-| Speed       | Slow                | Medium     | Fast                      |
-| Full duplex | Yes                 | No         | Yes                       |
-| Clock line  | No                  | Yes        | Yes                       |
-| Good for    | Debug, simple comms | Sensors    | High-speed data           |
-| Other       | Simple serial       | shared bus | uses separate lines       |
-
-
-I2C (Inter-Integrated Circuit)
-    summary:
-        - 2 wires to share one bus with many devices, each with an address
-
-    wires:
-        - SDA (data)
-        - SCL (clock)
-
-    characteristics:
-        - synchronous (uses clock line)
-        - supports multiple devices
-        - each device has an address
-        - master-slave protocol
-
-    pros:
-        - only 2 wires
-        - can have many devices on same bus
-        - very common in sensors
-
-    cons:
-        - slower than SPI
-        - more complex (ACK, addressing)
-        - sensitive to noise (good for short PCB distances only)
-
-    used for:
-        - temperature sensors
-        - accelerometers/ IMUs
-        - EEPROM
-        - small peripherals
-
-SPI (Serial Peripheral Interface)
-    summary:
-        - fast protocol with separate data lines and a chip select for each device
-        - very fast information with dedicated wires
-
-    wires:
-        - MOSI (master out, slave in)
-        - MISO (master in, slave out)
-        - SCLK (clock)
-        - CS (chip select, one per device)
-
-    characteristics:
-        - very fast
-        - full duplex (send and receive simultaneously)
-        - master controls clock
-
-    pros:
-        - much faster than I2C/ UART
-        - very reliable
-        - good for streaming data
-
-    cons:
-        - requires more wires
-        - not ideal for many devices
-        - no built in addressing
-
-    used for:
-        - external flash memory
-        - displays
-        - high speed sensors
-        - ADCs/ DACs
-
-
-UART (Universal Asynchronous Receiver/ Transmitter)
-    summary:
-        - 2 wires sending bytes back and forth at an agreed upon speed
-
-    wires:
-        - TX (transmit)
-        - RX (receive)
-
-    characteristics:
-        - asynchronous (no clock wire)
-        - point to point (only 2 devices)
-        - simple but slow
-
-    pros:
-        - very easy to use
-        - good for debugging/ logging
-        - only 2 wires
-
-    cons:
-        - not good for many devices
-        - not very fast
-        - can lose sync if baud rates mismatch
-
-    used for:
-        - GPS modules
-        - bluetooth modules
-        - debug prints (printf over serial)
-
-*/
-
-/*
-
-| Feature               | CAN                               | Ethernet                           |
-| --------------------- | --------------------------------- | ---------------------------------- |
-| Bandwidth             | Low (~1-8 Mbps)                   | High (100 Mbps - 1 Gbps)           |
-| Use case              | Control messages, safety-critical | High-bandwidth data (video, radar) |
-| Reliability           | Very high                         | High but less deterministic        |
-| Message Size          | Small                             | Large                              |
-| Topology              | Single shared bus                 | Switched network                   |
-| Real-time suitability | Yes                               | Usually no                         |
-
-
-CAN (Controller Area Network)
-    summary:
-        - a robust communication bus designed for cars, where many ECUs share one bus and messages have priorities
-        - nervous system of a car: robust, small, critical messages
-
-    wires:
-        - CAN-H
-        - CAN-L
-
-    characteristics:
-        - multi master bus
-        - every node can talk
-        - arbitration system decides which message wins
-        - very reliable and fault tolerant
-        - used for real time control in vehicles
-
-    pros:
-        - extremely robust
-        - works in noisy environments
-        - determines priority automatically
-        - many devices can share 1 bus
-        - small fixed size messages (8 bytes) (predictable timing)
-
-    cons:
-        - lower bandwidth (1 Mbps) (classic CAN)
-        - messages are small
-        - requires tight timing rules
-
-    used for:
-        - powertrain ECUs
-        - braking systems
-        - steering
-        - battery management systems
-        - vehicle control networks
-
-
-ETH (Automotive Ethernet)
-    summary:
-        - provides high speed communication for cameras, sensors, ADAS, infotainment, and high bandwidth modules
-        - internet inside the car: huge amounts of data, fast
-
-    characteristics:
-        - much faster than CAN
-        - used for data-heavy systems
-        - supports structured networks (switches/ routing)
-        - standard speeds: 100 Mbps, 1 Gbps, and up
-
-    pros:
-        - extremely high bandwidth
-        - good for cameras and sensors
-        - supports complex topologies
-        - future proof
-
-    cons:
-        - more power consumption
-        - more complex hardware/ software
-        - not ideal for real time control (higher latency than CAN)
-
-    used for:
-        - autonomous driving sensors
-        - cameras
-        - radar/ LiDAR
-        - infotainment
-        - OTA updates
-
-*/
-
-/*
-
-what is firmware?
-    - software that directly control hardware
-    - lives in flash memory and runs as soon as device powers on
-
-what is a microcontroller (MCU)?
-    - tiny computer on a chip
-    - includes: CPU, flash (program storage), RAM (variables), timers, GPIO pins, communication modules (UART, SPI, I2C, CAN)
-
-what is the difference between flash and RAM?
-    | Flash                                   | RAM                              |
-    | --------------------------------------- | -------------------------------- |
-    | Non-volatile (keeps data without power) | Volatile (erased when power off) |
-    | Stores firmware                         | Stores variables/stack           |
-    | Slow to write                           | Fast                             |
-
-what is volatile?
-    - a keyword telling the compiler that a value may change unexpectedly and to not optimize it
-    - used for hardware registers and variables changed by interrupts
-
-what is static?
-    - the variable keeps its value between function calls
-    - has file only visibility (not accessible from other files)
-
-how do pointers work?
-    - pointers store memory addresses
-    - used to access hardware registers, modify variables by reference, work with arrays efficiently
-
-what is an interrupt?
-    - hardware signal that stops the program to handle another event right away
-    - examples: button press, sensor reading, timer expiration
-
-what is a watchdog timer?
-    - a hardware timer that resets the system if firmware freezes
-
-what is UART
-    - Universal Asynchronous Receiver/ Transmitter
-    - simple, relatively slow, serial communication (TX/ RX pins)
-
-what is I2C?
-    - Inter Integrated Circuit
-    - two wire communication (SDA/ SCL)
-    - used for sensors
-
-what is SPI?
-    - Serial Peripheral Interface
-    - fast, full duplex communication with MOSI, MISO, SCK, CS
-    - used for displays, flash chips, higher speed devices
-
-what is CAN?
-    - Controller Area Network
-    - a robust communication bus used in cars
-    - allows many devices to communicate even in noisy environments
-
-what is an RTOS?
-    - Real Time Operating System
-    - provides tasks, priorities, scheduling, semaphores, mutexes, timers
-    - used when precise timing is required
-
-what is a mutex?
-    - a lock that ensures only one task uses a shared resource at a time
-
-what is a semaphore?
-    - a signal mechanism
-    - used for notifying a task that an event happened and task synchronisation
-
-what is a race condition?
-    - when two pieces of code access the same data at the same time and cause incorrect results
-
-what is memory mapped I/O?
-    - hardware registers are accessed like regular memory addresses
-
-why is C used for firmware?
-    - fast, predictable, close to hardware, small in memory use, widely supported for MCUs
-
-what is the difference between pass by value and pass by reference?
-    | Pass by Value                     | Pass by Reference (pointer)     |
-    | --------------------------------- | ------------------------------- |
-    | Copies the value                  | Passes the address (pointer)    |
-    | Does not affect original variable | Modifies original variable      |
-
-what is a segmentation fault?
-    - an invalid memory access, usually caused by bad pointers
-
-what is the difference between SRAM and flash?
-    | SRAM                          | Flash                          |
-    | ----------------------------- | ------------------------------ |
-    | Volatile (data lost on power) | Non-volatile (retains data)    |
-    | Used for variables/ stack     | Used for program storage       |
-    | Faster access                 | Slower to write/ erase         |
-
-what is a bootloader
-    - small code that runs before the main firmware to set up the system or perform updates
-
-what happens in an ISR (interrupt service routine)?
-    - handles quick logic, set flags, then exits
-    - avoids long code or blocking calls
-
-what is DMA (direct memory access)?
-    - hardware engine that moves data without using the CPU
-
-what is priority inversion?
-    - when a low priority task holds a lock needed by a high priority task, causing delays
-    - fix: priority inheritance
-
-when do you use a semphore vs mutex
-    - mutex: protect shared resources (only one task at a time)
-    - semaphore: signal between tasks (counting, multiple signals)
-
-why use an RTOS instead of bare metal superloop?
-    - precise timing
-    - multiple tasks
-    - easier code organization
-    - built in synchronization tools
-
-why can UART lose synchronization?
-    - no clock line
-    - if baud rates differ, bits get misaligned
-
-why does SPI need a CS (chip select) line?
-    - to select which slave device the master is talking to
-
-why does I2C use pull up resistors?
-    - open drain lines need pull ups to define high state
-
-why does CAN use arbitration?
-    - to determine which message has priority on a shared bus without collision
-
-why is ethernet used for autonomous systems?
-    - high speed data transfer needed for sensors
-
+/*************************************************** bitwise operation notes ****************************************************************/
+
+// & (AND) sets bit to 1 if both bits are 1
+    0 & 0 = 0
+    1 & 0 = 0
+    1 & 1 = 1
+    
+// | (OR) sets bit to 1 if at least one bit is 1
+    0 | 0 = 0
+    1 | 0 = 1
+    1 | 1 = 1
+
+// ^ (XOR) sets bit to 1 if bits are different
+    0 ^ 0 = 0
+    1 ^ 0 = 1
+    1 ^ 1 = 0
+    
+// ~ (NOT) inverts bits
+    ~0 = 1
+    ~1 = 0
+
+// << (left shift) shifts bits to the left (multiplies by powers of 2)
+    0010 << 2 = 1000
+    = 2 * 2^2 = 8           //<- 2^x where x = shift amount
+
+// >> (right shift) shifts bits to the right (divides by powers of 2)
+    1000 >> 2 = 0010
+    = 8 / 2^2 = 2           //<- 2^x where x = shift amount
+
+// 2's complement (negative numbers)
+    -n = ~n + 1
+    -1 = ~(0001) + 1 = 1110 + 1 = 1111
+
+/*-------------------- examples: ----------------------*/
+
+// use & to check if a number is odd or even
+int odd_or_even(int x) {
+    (x & 1) ? printf("Odd") : printf("Even");
+    return 0;
+}
+/* explanation:
+all even numbers have last bit 0
+
+{even number} & 1 = 0
+8 & 1 = 1000 & 0001 = 0000
 */
 
 
-/* bit manipulation */
+// signed vs unsigned
+int negative_num(int x) {
+    printf("Signed Result %d \n", ~x);      // %d prints -1
+    printf("Unsigned Result %u", ~x);       // %u prints 15 (1111)
+    return 0;
+}
+
+
+
+/******************************************************* bit manipulation notes ************************************************************/
 
 // set a bit
     num |= (1 << {bit});
@@ -397,7 +74,7 @@ why is ethernet used for autonomous systems?
 // masking
     {value} & 0xF
 
-// examples:
+/*-------------------- examples: ----------------------*/
 
 // check 3rd bit is set
     return (num & (1 << 3)) != 0;
@@ -409,5 +86,247 @@ why is ethernet used for autonomous systems?
     reg &= ~0x04;
 
 
-/* leetcode practice */
 
+/********************************************************* leetcode practice (easy) ********************************************************/
+
+/*-------------------- 136 Single Number ---------------------
+Given a non-empty array of integers nums, every element appears twice except for one. Find that single one.
+You must implement a solution with a linear runtime complexity and use only constant extra space. */
+int singleNumber(int* nums, int numsSize) {
+    int result = 0;
+
+    for(int i = 0; i < numsSize; i++) {
+        result = result ^ nums[i];
+    }
+    return result;
+}
+/* explanation:
+nums = [4,1,2,1,2]
+
+result = result ^ nums[i]
+    = 0 ^ 4 ^ 1 ^ 2 ^ 1 ^ 2
+    = 4 ^ (1 ^ 1) ^ (2 ^ 2)         <- pairs cancel out
+    = 4 ^ 0 ^ 0
+    = 4
+*/
+
+
+
+/*-------------------- 231 Power of 2 -----------------------
+Given an integer n, return true if it is a power of two. Otherwise, return false.
+An integer n is a power of two, if there exists an integer x such that n == 2x. */
+bool isPowerOfTwo(int n) {
+    if(n <= 0) {
+        return false;
+    }
+    return (n & (n - 1)) == 0;
+}
+/* explanation:
+n = 2^x = 1 (1), 2 (10), 4 (100), 8 (1000)      <- only first bit is 1
+(n - 1) = 0 (0), 1 (01), 3 (011), 7 (0111)      <- bits flip for 2^x - 1
+
+n & (n - 1) = 2 & 1 = 10 & 01 = 00              <- 2^x & (2^x - 1) = 0      
+*/
+
+
+
+/*------------------- 191 Number of 1 bits ------------------
+Given a positive integer n, write a function that returns the number of set bits in its binary representation. */
+int hammingWeight(int n) {
+    int count = 0;
+
+    while(n != 0) {
+        n &= (n - 1);
+        count++;
+    }
+    return count;
+}
+/* explanation:
+n = 6 (110)
+
+n &= (n - 1)                            <- n & (n - 1) removes the rightmost 1 bit
+    = 6 & 5 = 110 & 101 = 100 (4)
+    = 4 & 3 = 100 & 011 = 000 (0)       <- count = 2, so there are 2 set bits
+*/
+
+
+
+/*-------------------- 461 Hamming Distance -----------------
+The Hamming distance between two integers is the number of positions at which the corresponding bits are different.
+Given two integers x and y, return the Hamming distance between them. */
+int hammingDistance(int x, int y) {
+    int n = x ^ y;
+    int count = 0;
+
+    while(n != 0) {
+        n &= (n - 1);
+        count++;
+    }
+    return count;
+}
+/* explanation:
+x = 1 (001), y = 4 (100)
+
+n = x ^ y = 001 ^ 100 = 101
+
+n &= (n - 1)                    <- n & (n - 1) removes the rightmost 1 bit
+    = 101 & 100 = 100
+    = 100 & 011 = 000           <- count = 2, so distance is 2
+*/
+
+
+
+/*-------------------- 268 Missing Number -------------------
+Given an array nums containing n distinct numbers in the range [0, n],
+return the only number in the range that is missing from the array. */
+int missingNumber(int* nums, int numsSize) {
+    int n = 0;
+    
+    for(int i = 0; i < numsSize; i++) {
+        n = n ^ nums[i] ^ (i + 1);
+    }
+    return n;
+}
+/* explanation:
+nums = [3, 0, 1]
+
+n = n ^ nums[i] ^ (i + 1)
+    = 0 ^ 3 ^ 1 ^ 0 ^ 2 ^ 1 ^ 3
+    = 0 ^ (3 ^ 3) ^ 0 ^ (1 ^ 1) ^ 2         <- pairs cancel out
+    = 0 ^ 0 ^ 0 ^ 0 ^ 2
+    = 2
+*/
+
+
+
+/*--------------------- 190 Reverse Bits ---------------------
+Reverse bits of a given 32 bits signed integer. */
+int reverseBits(int n) {
+    int size = 32;
+    int result = 0;
+
+    for(int i = 0; i < size; i++) {
+        result <<= 1;
+        result |= (n & 1);
+        n >>= 1;
+    }
+    return result;
+}
+/* explanation:
+result <<= 1                    <- shift result to left to make space for next bit
+result |= (n & 1)               <- (n & 1) gets the rightmost bit, (result |=) appends that bit to result
+n >>= 1                         <- shift n to right to process the next bit
+*/
+
+
+
+/*---------------------- 67 Add Binary -----------------------
+Given two binary strings a and b, return their sum as a binary string. */
+char* addBinary(char* a, char* b) {
+    int i = strlen(a) - 1;
+    int j = strlen(b) - 1;
+    int k = (i > j ? i : j) + 3;
+    char *s = malloc(k); 
+    int c = 0;
+    s[k-1] = '\0';
+
+    while (i >= 0 || j >= 0 || c != 0) {
+        int sum = c;
+
+        if (i >= 0) {
+            sum += a[i] - '0';
+            i--;
+        } 
+        if (j >= 0) {
+            sum += b[j] - '0';
+            j--;
+        }
+        k--;
+        s[k-1] = (sum % 2) + '0';
+        c = sum / 2;
+    }
+    return s + k - 1;
+}
+
+
+
+/*-------------------- 338 Counting Bits ---------------------
+Given an integer n, 
+return an array ans of length n + 1 such that for each i (0 <= i <= n), 
+ans[i] is the number of 1's in the binary representation of i. */
+int* countBits(int n, int* returnSize) {
+    *returnSize = n + 1;
+    int* ans = malloc((*returnSize) * sizeof(int));
+
+    for(int i = 0; i < *returnSize; i++) {
+        int m = i;
+        int count = 0;
+        while(m != 0) {
+            m &= (m - 1);
+            count++;
+        }
+        ans[i] = count;
+    }
+    return ans;
+}
+/* explanation:
+m &= (m - 1)                            <- m & (m - 1) removes the rightmost 1 bit
+    = 6 & 5 = 110 & 101 = 100 (4)
+    = 4 & 3 = 100 & 011 = 000 (0)       <- count = 2, so there are 2 set bits
+*/
+
+
+
+/*------------------ 389 Find the Difference ------------------
+You are given two strings s and t.
+String t is generated by random shuffling string s and then add one more letter at a random position.
+Return the letter that was added to t. */
+char findTheDifference(char* s, char* t) {
+    char result = 0;
+
+    for(int i = 0; s[i] != '\0'; i++) {
+        result ^= s[i];
+    }
+
+    for(int i = 0; t[i] != '\0'; i++) {
+        result ^= t[i];
+    }
+    return result;
+}
+/* explanation:
+s = "abcd", t = "abcde"
+
+result = result ^ s[i] ^ t[i]
+    = 0 ^ a ^ b ^ c ^ d ^ a ^ b ^ c ^ d ^ e
+    = (a ^ a) ^ (b ^ b) ^ (c ^ c) ^ (d ^ d) ^ e         <- pairs cancel out
+    = 0 ^ 0 ^ 0 ^ 0 ^ e
+    = e
+*/
+
+
+
+/*--------- 201 Bitwise AND of Numbers Range (medium) ---------
+Given two integers left and right that represent the range [left, right], 
+return the bitwise AND of all numbers in this range, inclusive. */
+int rangeBitwiseAnd(int left, int right) {
+    int shift = 0;
+
+    while(left != right) {
+        left >>= 1;
+        right >>= 1;
+        shift++;
+    }
+    return left << shift;
+}
+/* explanation:
+left >>= 1; right >>= 1;            <- shift both numbers to right until they are equal to find common prefix
+left << shift                       <- shift left to reinsert trailing zeros
+
+left = 5 (0101), right = 7 (0111)
+
+while (left != right)
+    0101 != 0111
+    0010 != 0011
+    0001 == 0001                    <- common prefix is 1 (shift = 2)
+return 0001 << 2 = 0100 (4)
+*/
