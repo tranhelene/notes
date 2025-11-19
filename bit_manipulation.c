@@ -330,3 +330,126 @@ while (left != right)
     0001 == 0001                    <- common prefix is 1 (shift = 2)
 return 0001 << 2 = 0100 (4)
 */
+
+
+
+/********************************************* interrupt service routine (ISR) notes ********************************************************/
+
+/*
+general notes:
+    - quick checklist:
+        - fast
+        - volatile variables
+        - no blocking calls
+        - no loops/ delays/ printf
+        - interrupt flag cleared
+        - using FromISR version of APIs
+        - safe access to shared data
+        - ISR not doing heavy work
+    - ISR functions should be as short as possible
+    - variables shared between ISR and main code need to be volatile (volatile int {variable})
+    - disable interrupts around critical sections in main code
+*/
+
+/*-------------------- examples: ----------------------*/
+
+// Bad ISR
+int flag = 0;
+
+void TIM2_IRQHandler(void) {
+    for(int i = 0; i < 10000; i++) {}   // long delay loop
+
+    printf("Interrupt!\n");            // BAD in ISR
+
+    flag = 1;
+
+    TIM2->SR &= ~1;                    // incorrectly clearing flag
+}
+// wrong: delay loop/ printf/ flag is not volatile/ clear flag using &= ~1
+
+// fixed code
+volatile int flag = 0;
+
+void TIM2_IRQHandler(void) {
+    flag = 1;                     // set flag quickly
+
+    TIM2->SR = 0;                 // clear interrupt flag properly
+}
+
+
+
+// Using RTOS calls incorrectly
+void UART_IRQHandler(void) {
+    char c = UART->DR;
+
+    xQueueSend(uartQueue, &c, portMAX_DELAY); // BAD: blocks inside ISR
+    UART->INTCLR = 1;
+}
+// wrong: xQueueSend() blocks/ must use FromISR
+
+// fixed code
+void UART_IRQHandler(void) {
+    char c = UART->DR;
+
+    BaseType_t xHigher;
+    xQueueSendFromISR(uartQueue, &c, &xHigher);
+
+    portYIELD_FROM_ISR(xHigher);     // optional
+    UART->INTCLR = 1;
+}
+
+
+
+// forgetting volatile and race condition
+int count = 0;
+
+void EXTI1_IRQHandler(void) {
+    count++;
+    EXTI->PR = 1;     // clear interrupt
+}
+// wrong: count not volatile/ 32 bit addition not atomic
+
+// fixed code
+volatile uint32_t count = 0;
+
+void EXTI1_IRQHandler(void) {
+    count++;            // short, fast
+    EXTI->PR = 1;
+}
+
+
+
+// good ISR example
+void ISR_Name(void) {
+    // 1. Read data from hardware
+    uint32_t status = PERIPH->STATUS;
+
+    // 2. Clear interrupt flag immediately
+    PERIPH->INTCLR = 1;
+
+    // 3. Do minimal processing
+    uint8_t event = status & 0x01; // example
+
+    // 4. Notify main code or RTOS
+    BaseType_t xHigher;
+    xQueueSendFromISR(queue, &event, &xHigher);
+
+    portYIELD_FROM_ISR(xHigher);
+}
+
+
+
+// general structure
+void <InterruptName>_IRQHandler(void) {
+
+    // Step 1: Read interrupt status (optional)
+    uint32_t status = PERIPH->STATUS;
+
+    // Step 2: Clear interrupt flag
+    PERIPH->INTCLR = 1;
+
+    // Step 3: Minimal processing
+    dataReady = 1;
+
+    // Step 4: Exit (return automatically)
+}
