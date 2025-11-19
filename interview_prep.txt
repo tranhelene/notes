@@ -64,3 +64,5 @@ questions:
     - how would training be conducted at the beginning of the term?
     - if I were to receive an offer, what would you recommend I learn or improve on before the start date?
     - when can I hear back about this position?
+
+new embedded on github the embedded george
