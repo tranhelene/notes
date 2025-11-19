@@ -49,7 +49,7 @@ all even numbers have last bit 0
 // signed vs unsigned
 int negative_num(int x) {
     printf("Signed Result %d \n", ~x);      // %d prints -1
-    printf("Unsigned Result %u", ~x);       // %u prints 15 (1111)
+    printf("Unsigned Result %u", ~x);       // %u prints 1111
     return 0;
 }
 
