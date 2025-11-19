@@ -1,4 +1,4 @@
-/*************************************************** bitwise operation notes ****************************************************************/
+/*************************************************** bitwise operation notes ***************************************************************/
 
 // & (AND) sets bit to 1 if both bits are 1
     0 & 0 = 0
@@ -87,7 +87,7 @@ int negative_num(int x) {
 
 
 
-/********************************************************* leetcode practice (easy) ********************************************************/
+/********************************************** bit manipulation leetcode practice (easy) ***************************************************/
 
 /*-------------------- 136 Single Number ---------------------
 Given a non-empty array of integers nums, every element appears twice except for one. Find that single one.
