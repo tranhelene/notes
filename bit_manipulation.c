@@ -339,6 +339,7 @@ return 0001 << 2 = 0100 (4)
 general notes:
     - quick checklist:
         - fast
+        - void function(void)
         - volatile variables
         - no blocking calls
         - no loops/ delays/ printf
